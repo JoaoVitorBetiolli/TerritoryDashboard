@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.territorydashboard.TerritoryApp
 import com.example.territorydashboard.domain.casodeuso.MontarPainel
 import com.example.territorydashboard.domain.previsao.MotorPrevisao
+import com.example.territorydashboard.domain.repositorio.PreferenciasRepositorio
 import com.example.territorydashboard.domain.repositorio.TerritorioRepositorio
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +20,7 @@ import java.time.LocalDate
 
 class PainelViewModel(
     private val repositorio: TerritorioRepositorio,
+    private val preferencias: PreferenciasRepositorio,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -50,7 +52,12 @@ class PainelViewModel(
                     return@launch
                 }
 
-                val id = savedStateHandle.get<String>(CHAVE_TERRITORIO) ?: territorios.first().id
+                // ordem: o que esta na tela agora > favorito salvo > primeiro da lista
+                val id = savedStateHandle.get<String>(CHAVE_TERRITORIO)
+                    ?: preferencias.territorioFavorito()
+                    ?: territorios.first().id
+                savedStateHandle[CHAVE_TERRITORIO] = id
+
                 val painel = montarPainel.executar(id, LocalDate.now())
 
                 if (painel == null) {
@@ -66,7 +73,17 @@ class PainelViewModel(
 
     fun selecionarTerritorio(id: String) {
         savedStateHandle[CHAVE_TERRITORIO] = id
+        preferencias.salvarTerritorioFavorito(id)
         carregar()
+    }
+
+    // chamado quando a tela volta a aparecer: se o favorito mudou nas configuracoes, recarrega
+    fun conferirFavorito() {
+        val favorito = preferencias.territorioFavorito()
+        val atual = savedStateHandle.get<String>(CHAVE_TERRITORIO)
+        if (favorito != null && atual != null && favorito != atual) {
+            selecionarTerritorio(favorito)
+        }
     }
 
     companion object {
@@ -75,7 +92,7 @@ class PainelViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as TerritoryApp
-                PainelViewModel(app.repositorio, createSavedStateHandle())
+                PainelViewModel(app.repositorio, app.preferencias, createSavedStateHandle())
             }
         }
     }

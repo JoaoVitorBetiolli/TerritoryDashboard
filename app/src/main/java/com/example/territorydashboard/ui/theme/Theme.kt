@@ -22,7 +22,8 @@ private val CoresClaras = lightColorScheme(
     secondaryContainer = Color(0xFFCDE8E4),
     onSecondaryContainer = Color(0xFF00201C),
     surfaceVariant = Color(0xFFE3ECEA),
-    surfaceContainerHighest = Color(0xFFE3ECEA)
+    surfaceContainerHighest = Color(0xFFE3ECEA),
+    surfaceContainer = Color(0xFFEDF3F2)
 )
 
 private val CoresEscuras = darkColorScheme(
@@ -36,7 +37,8 @@ private val CoresEscuras = darkColorScheme(
     secondaryContainer = Color(0xFF1F4D47),
     onSecondaryContainer = Color(0xFFCDE8E4),
     surfaceVariant = Color(0xFF2A3230),
-    surfaceContainerHighest = Color(0xFF2A3230)
+    surfaceContainerHighest = Color(0xFF2A3230),
+    surfaceContainer = Color(0xFF242A29)
 )
 
 // cores de status que o Material nao tem: normal, atencao, critico e sem dados

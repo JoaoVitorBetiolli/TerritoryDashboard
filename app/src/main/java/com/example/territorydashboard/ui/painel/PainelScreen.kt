@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -30,6 +31,11 @@ fun PainelScreen(
     viewModel: PainelViewModel = viewModel(factory = PainelViewModel.Factory)
 ) {
     val estado by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // roda toda vez que o painel volta a aparecer (ex.: voltando das configuracoes)
+    LaunchedEffect(Unit) {
+        viewModel.conferirFavorito()
+    }
 
     when (val e = estado) {
         is PainelUiState.Carregando ->
