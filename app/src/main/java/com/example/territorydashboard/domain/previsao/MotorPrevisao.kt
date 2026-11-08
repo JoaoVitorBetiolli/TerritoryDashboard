@@ -93,6 +93,25 @@ class MotorPrevisao {
         )
     }
 
+    // valor previsto para daqui a DIAS_PREVISAO dias (null quando nao da para prever)
+    fun projetar(leituras: List<Leitura>, hoje: LocalDate): Double? {
+        if (dadosDesatualizados(leituras, hoje)) return null
+
+        val inicioJanela = hoje.minusDays((DIAS_JANELA - 1).toLong())
+        val janela = leituras
+            .filter { !it.data.isBefore(inicioJanela) }
+            .sortedBy { it.data }
+
+        if (janela.size < MINIMO_LEITURAS) return null
+
+        val xs = janela.map { ChronoUnit.DAYS.between(inicioJanela, it.data).toDouble() }
+        val ys = janela.map { it.valor }
+        val reta = regressaoLinear(xs, ys)
+
+        return reta.a + reta.b * (DIAS_JANELA - 1 + DIAS_PREVISAO)
+    }
+
+
     fun regressaoLinear(xs: List<Double>, ys: List<Double>): Reta {
         val n = xs.size
         val mediaX = xs.average()
