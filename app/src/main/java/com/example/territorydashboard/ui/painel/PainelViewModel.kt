@@ -1,5 +1,8 @@
 package com.example.territorydashboard.ui.painel
 
+import android.os.Process
+import android.os.SystemClock
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -73,6 +76,9 @@ class PainelViewModel(
                 }
 
                 if (primeiraVez) {
+                    // medicao para o plano de evidencias: tempo desde que o processo abriu
+                    val tempo = SystemClock.uptimeMillis() - Process.getStartUptimeMillis()
+                    Log.d("Medicao", "painel pronto em $tempo ms")
                     notificarCriticos()
                 }
             } catch (e: Exception) {
