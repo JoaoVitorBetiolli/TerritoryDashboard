@@ -1,15 +1,12 @@
 import csv
 import os
 import random
-from datetime import date, timedelta
 
 random.seed(42)
 
 DIAS = 60
 PASTA = "app/src/main/assets/dados"
 os.makedirs(PASTA, exist_ok=True)
-
-hoje = date.today()
 
 territorios = [
     ["jardim-flores", "Jardim das Flores", "BAIRRO", -23.55, -46.63],
@@ -59,9 +56,12 @@ for t in territorios:
                 if random.randint(1, 100) <= 15:
                     continue
 
-            data = hoje - timedelta(days=DIAS - 1 - dia)
+            # em vez da data, guarda quantos dias atras foi a leitura (0 = hoje).
+            # o app transforma em data quando le o arquivo, entao a demonstracao
+            # funciona em qualquer dia em que o app for aberto
+            dias_atras = DIAS - 1 - dia
             valor = gerar_valor(t[0], ind[0], dia)
-            leituras.append([ind[0], t[0], data.isoformat(), valor, "SINTETICA"])
+            leituras.append([ind[0], t[0], dias_atras, valor, "SINTETICA"])
 
 
 def salvar_csv(nome, cabecalho, linhas):
@@ -74,4 +74,4 @@ def salvar_csv(nome, cabecalho, linhas):
 
 salvar_csv("territorios.csv", ["id", "nome", "tipo", "lat", "lon"], territorios)
 salvar_csv("indicadores.csv", ["id", "tema", "nome", "unidade", "limiar_atencao", "limiar_critico"], indicadores)
-salvar_csv("leituras.csv", ["indicador_id", "territorio_id", "data", "valor", "origem"], leituras)
+salvar_csv("leituras.csv", ["indicador_id", "territorio_id", "dias_atras", "valor", "origem"], leituras)

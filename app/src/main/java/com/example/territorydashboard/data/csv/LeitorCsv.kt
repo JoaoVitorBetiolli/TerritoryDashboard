@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.territorydashboard.data.local.IndicadorEntity
 import com.example.territorydashboard.data.local.LeituraEntity
 import com.example.territorydashboard.data.local.TerritorioEntity
+import java.time.LocalDate
 
 class LeitorCsv(private val context: Context) {
 
@@ -31,11 +32,12 @@ class LeitorCsv(private val context: Context) {
     }
 
     fun lerLeituras(): List<LeituraEntity> {
+        val hoje = LocalDate.now()
         return lerLinhas("leituras.csv").map {
             LeituraEntity(
                 indicadorId = it[0],
                 territorioId = it[1],
-                data = it[2],
+                data = hoje.minusDays(it[2].toLong()).toString(),
                 valor = it[3].toDouble(),
                 origem = it[4]
             )
