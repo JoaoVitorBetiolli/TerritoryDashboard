@@ -33,7 +33,15 @@ class TerritorioRepositorioImpl(
                 val territorios = leitorCsv.lerTerritorios()
                 val indicadores = leitorCsv.lerIndicadores()
                 val leituras = leitorCsv.lerLeituras()
-                dao.substituirDados(territorios, indicadores, leituras)
+
+                // se o banco ja tem exatamente esses dados, nao precisa gravar tudo de novo
+                val ultimaNoArquivo = leituras.maxOfOrNull { it.data }
+                val jaCarregado = dao.contarLeituras() == leituras.size &&
+                        dao.ultimaDataLeitura() == ultimaNoArquivo
+
+                if (!jaCarregado) {
+                    dao.substituirDados(territorios, indicadores, leituras)
+                }
             }
             true
         } catch (e: Exception) {

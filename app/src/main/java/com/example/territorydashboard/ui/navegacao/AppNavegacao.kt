@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -47,7 +48,7 @@ data class ItemMenu(val rota: String, val nome: String, val icone: ImageVector)
 private val itensMenu = listOf(
     ItemMenu(Rotas.PAINEL, "Painel", Icons.Filled.Home),
     ItemMenu(Rotas.HISTORICO, "Histórico", Icons.AutoMirrored.Filled.List),
-    ItemMenu(Rotas.CONFIGURACOES, "Configurações", Icons.Filled.Settings)
+    ItemMenu(Rotas.CONFIGURACOES, "Ajustes", Icons.Filled.Settings)
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,7 +62,7 @@ fun AppNavegacao() {
         Rotas.INDICADOR -> "Detalhe do indicador"
         Rotas.ALERTA -> "Detalhe do alerta"
         Rotas.HISTORICO -> "Histórico de decisões"
-        Rotas.CONFIGURACOES -> "Configurações"
+        Rotas.CONFIGURACOES -> "Ajustes"
         else -> "Radar do Bairro"
     }
     val telaPrincipal = itensMenu.any { it.rota == rotaAtual }
@@ -96,7 +97,8 @@ fun AppNavegacao() {
                                 }
                             },
                             icon = { Icon(item.icone, contentDescription = null) },
-                            label = { Text(item.nome) }
+                            // uma linha so: com fonte grande o rotulo nao quebra no meio da palavra
+                            label = { Text(item.nome, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                         )
                     }
                 }

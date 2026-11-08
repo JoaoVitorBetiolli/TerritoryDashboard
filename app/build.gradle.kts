@@ -25,7 +25,7 @@ android {
             // assina com a chave de debug so para o APK poder ser instalado na entrega
             signingConfig = signingConfigs.getByName("debug")
             optimization {
-                enable = false
+                enable = true
             }
         }
     }

@@ -21,9 +21,11 @@ abstract class AppDao {
 
     @Query("DELETE FROM leituras")
     abstract suspend fun apagarLeituras()
-
     @Query("SELECT COUNT(*) FROM leituras")
     abstract suspend fun contarLeituras(): Int
+
+    @Query("SELECT MAX(data) FROM leituras")
+    abstract suspend fun ultimaDataLeitura(): String?
 
     @Query("SELECT * FROM territorios ORDER BY nome")
     abstract suspend fun listarTerritorios(): List<TerritorioEntity>
