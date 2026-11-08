@@ -1,0 +1,4 @@
+id,tema,nome,unidade,limiar_atencao,limiar_critico
+carga-pico,ENERGIA,Carga no horário de pico,%,80,95
+temp-max,CLIMA,Temperatura máxima,°C,32,36
+chuva-24h,CLIMA,Chuva acumulada em 24h,mm,30,50
