@@ -13,6 +13,11 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.Alignment
+import com.example.territorydashboard.ui.componentes.LARGURA_MAXIMA_CONTEUDO
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -105,40 +110,50 @@ fun AppNavegacao() {
             }
         }
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Rotas.PAINEL,
-            modifier = Modifier.padding(innerPadding)
+        // em tela larga o conteudo fica centralizado com largura maxima
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            contentAlignment = Alignment.TopCenter
         ) {
-            composable(Rotas.PAINEL) {
-                PainelScreen(
-                    onAbrirIndicador = { territorioId, indicadorId ->
-                        navController.navigate(Rotas.indicador(territorioId, indicadorId))
-                    },
-                    onAbrirAlerta = { territorioId, alertaId ->
-                        navController.navigate(Rotas.alerta(territorioId, alertaId))
-                    }
-                )
-            }
+            NavHost(
+                navController = navController,
+                startDestination = Rotas.PAINEL,
+                modifier = Modifier
+                    .widthIn(max = LARGURA_MAXIMA_CONTEUDO)
+                    .fillMaxSize()
+            ) {
+                composable(Rotas.PAINEL) {
+                    PainelScreen(
+                        onAbrirIndicador = { territorioId, indicadorId ->
+                            navController.navigate(Rotas.indicador(territorioId, indicadorId))
+                        },
+                        onAbrirAlerta = { territorioId, alertaId ->
+                            navController.navigate(Rotas.alerta(territorioId, alertaId))
+                        }
+                    )
+                }
 
-            composable(Rotas.HISTORICO) {
-                HistoricoScreen()
-            }
+                composable(Rotas.HISTORICO) {
+                    HistoricoScreen()
+                }
 
-            composable(Rotas.CONFIGURACOES) {
-                ConfiguracoesScreen()
-            }
+                composable(Rotas.CONFIGURACOES) {
+                    ConfiguracoesScreen()
+                }
 
-            composable(Rotas.INDICADOR) {
-                IndicadorScreen(
-                    onAbrirAlerta = { territorioId, alertaId ->
-                        navController.navigate(Rotas.alerta(territorioId, alertaId))
-                    }
-                )
-            }
+                composable(Rotas.INDICADOR) {
+                    IndicadorScreen(
+                        onAbrirAlerta = { territorioId, alertaId ->
+                            navController.navigate(Rotas.alerta(territorioId, alertaId))
+                        }
+                    )
+                }
 
-            composable(Rotas.ALERTA) {
-                AlertaScreen()
+                composable(Rotas.ALERTA) {
+                    AlertaScreen()
+                }
             }
         }
     }

@@ -14,6 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.territorydashboard.domain.modelo.NivelAlerta
+import androidx.compose.foundation.layout.BoxWithConstraints
+import com.example.territorydashboard.ui.componentes.LinhaDeCards
+import com.example.territorydashboard.ui.componentes.colunasPara
+import com.example.territorydashboard.ui.componentes.tamanhoTela
 import com.example.territorydashboard.domain.modelo.OrigemDado
 import com.example.territorydashboard.nativo.CartaoPermissaoNotificacao
 import com.example.territorydashboard.ui.componentes.AlertCard
@@ -74,81 +78,91 @@ private fun ConteudoPainel(
     val territorioId = painel.territorio.id
     val sintetico = painel.indicadores.any { it.historico.lastOrNull()?.origem == OrigemDado.SINTETICA }
 
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(Espaco.grande),
-        verticalArrangement = Arrangement.spacedBy(Espaco.medio)
-    ) {
-        item {
-            TerritorySelector(
-                territorios = estado.territorios,
-                selecionadoId = territorioId,
-                onSelecionar = onSelecionarTerritorio
-            )
-        }
+    // descobre quanto espaco tem e decide quantos cards por linha
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val colunas = colunasPara(tamanhoTela(maxWidth))
 
-        item {
-            Text(painel.territorio.nome, style = MaterialTheme.typography.headlineSmall)
-            val data = if (painel.ultimaAtualizacao == null) "sem dados" else formatarData(painel.ultimaAtualizacao)
-            val origem = if (sintetico) " | Dados sintéticos" else ""
-            Text(
-                "Atualizado em $data$origem",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        if (estado.usandoDadosSalvos) {
-            item { AvisoDados("Não foi possível atualizar. Mostrando os últimos dados salvos.") }
-        }
-
-        if (painel.desatualizado) {
-            item { AvisoDados("Dados desatualizados: o app não emite alertas para este território até receber dados novos.") }
-        }
-        // so pede a permissao quando ela faz sentido: quando existe alerta critico
-        if (painel.alertas.any { it.nivel == NivelAlerta.CRITICO }) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(Espaco.grande),
+            verticalArrangement = Arrangement.spacedBy(Espaco.medio)
+        ) {
             item {
-                CartaoPermissaoNotificacao(
-                    mostrarQuandoConcedida = false,
-                    onConcedida = onPermissaoConcedida
+                TerritorySelector(
+                    territorios = estado.territorios,
+                    selecionadoId = territorioId,
+                    onSelecionar = onSelecionarTerritorio
                 )
             }
-        }
 
-        item {
-            Text("Alertas ativos", style = MaterialTheme.typography.titleLarge)
-        }
-        if (painel.alertas.isEmpty()) {
             item {
+                Text(painel.territorio.nome, style = MaterialTheme.typography.headlineSmall)
+                val data = if (painel.ultimaAtualizacao == null) "sem dados" else formatarData(painel.ultimaAtualizacao)
+                val origem = if (sintetico) " | Dados sintéticos" else ""
                 Text(
-                    "Nenhum alerta ativo.",
+                    "Atualizado em $data$origem",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
-        items(painel.alertas) { alerta ->
-            AlertCard(
-                nivel = alerta.nivel,
-                titulo = alerta.titulo,
-                confianca = alerta.confianca,
-                periodo = alerta.periodoPrevisto,
-                onClick = { onAbrirAlerta(territorioId, alerta.id) }
-            )
-        }
 
-        item {
-            Text("Indicadores", style = MaterialTheme.typography.titleLarge)
-        }
-        items(painel.indicadores) { resumo ->
-            KpiCard(
-                titulo = resumo.indicador.nome,
-                valor = resumo.valorAtual,
-                unidade = resumo.indicador.unidade,
-                variacao = resumo.variacaoSemana,
-                status = resumo.status,
-                onClick = { onAbrirIndicador(territorioId, resumo.indicador.id) }
-            )
+            if (estado.usandoDadosSalvos) {
+                item { AvisoDados("Não foi possível atualizar. Mostrando os últimos dados salvos.") }
+            }
+
+            if (painel.desatualizado) {
+                item { AvisoDados("Dados desatualizados: o app não emite alertas para este território até receber dados novos.") }
+            }
+
+            // so pede a permissao quando ela faz sentido: quando existe alerta critico
+            if (painel.alertas.any { it.nivel == NivelAlerta.CRITICO }) {
+                item {
+                    CartaoPermissaoNotificacao(
+                        mostrarQuandoConcedida = false,
+                        onConcedida = onPermissaoConcedida
+                    )
+                }
+            }
+
+            item {
+                Text("Alertas ativos", style = MaterialTheme.typography.titleLarge)
+            }
+            if (painel.alertas.isEmpty()) {
+                item {
+                    Text(
+                        "Nenhum alerta ativo.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            items(painel.alertas.chunked(colunas)) { linha ->
+                LinhaDeCards(linha, colunas) { alerta ->
+                    AlertCard(
+                        nivel = alerta.nivel,
+                        titulo = alerta.titulo,
+                        confianca = alerta.confianca,
+                        periodo = alerta.periodoPrevisto,
+                        onClick = { onAbrirAlerta(territorioId, alerta.id) }
+                    )
+                }
+            }
+
+            item {
+                Text("Indicadores", style = MaterialTheme.typography.titleLarge)
+            }
+            items(painel.indicadores.chunked(colunas)) { linha ->
+                LinhaDeCards(linha, colunas) { resumo ->
+                    KpiCard(
+                        titulo = resumo.indicador.nome,
+                        valor = resumo.valorAtual,
+                        unidade = resumo.indicador.unidade,
+                        variacao = resumo.variacaoSemana,
+                        status = resumo.status,
+                        onClick = { onAbrirIndicador(territorioId, resumo.indicador.id) }
+                    )
+                }
+            }
         }
     }
 }
