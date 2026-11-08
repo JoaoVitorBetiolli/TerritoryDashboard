@@ -9,7 +9,10 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.territorydashboard.TerritoryApp
 import com.example.territorydashboard.domain.casodeuso.MontarPainel
+import com.example.territorydashboard.domain.casodeuso.NotificarCriticos
+import com.example.territorydashboard.domain.modelo.Alerta
 import com.example.territorydashboard.domain.previsao.MotorPrevisao
+import com.example.territorydashboard.domain.repositorio.Notificador
 import com.example.territorydashboard.domain.repositorio.PreferenciasRepositorio
 import com.example.territorydashboard.domain.repositorio.TerritorioRepositorio
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,10 +24,12 @@ import java.time.LocalDate
 class PainelViewModel(
     private val repositorio: TerritorioRepositorio,
     private val preferencias: PreferenciasRepositorio,
+    notificador: Notificador,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val montarPainel = MontarPainel(repositorio, MotorPrevisao())
+    private val casoNotificar = NotificarCriticos(notificador, preferencias)
 
     private val _uiState = MutableStateFlow<PainelUiState>(PainelUiState.Carregando)
     val uiState: StateFlow<PainelUiState> = _uiState.asStateFlow()
@@ -41,6 +46,7 @@ class PainelViewModel(
         viewModelScope.launch {
             _uiState.value = PainelUiState.Carregando
             try {
+                val primeiraVez = !cargaFeita
                 if (!cargaFeita) {
                     cargaFalhou = !repositorio.atualizarDados()
                     cargaFeita = true
@@ -65,8 +71,31 @@ class PainelViewModel(
                 } else {
                     _uiState.value = PainelUiState.Sucesso(painel, territorios, cargaFalhou)
                 }
+
+                if (primeiraVez) {
+                    notificarCriticos()
+                }
             } catch (e: Exception) {
                 _uiState.value = PainelUiState.Erro("Não foi possível ler os dados salvos no aparelho.")
+            }
+        }
+    }
+
+    // olha os alertas de todos os territorios, nao so o que esta na tela
+    fun notificarCriticos() {
+        viewModelScope.launch {
+            try {
+                val hoje = LocalDate.now()
+                val todos = mutableListOf<Alerta>()
+                for (t in repositorio.listarTerritorios()) {
+                    val painel = montarPainel.executar(t.id, hoje)
+                    if (painel != null) {
+                        todos.addAll(painel.alertas)
+                    }
+                }
+                casoNotificar.executar(todos)
+            } catch (e: Exception) {
+                // se a notificacao falhar o app segue normal, o alerta continua no painel
             }
         }
     }
@@ -92,7 +121,7 @@ class PainelViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as TerritoryApp
-                PainelViewModel(app.repositorio, app.preferencias, createSavedStateHandle())
+                PainelViewModel(app.repositorio, app.preferencias, app.notificador, createSavedStateHandle())
             }
         }
     }

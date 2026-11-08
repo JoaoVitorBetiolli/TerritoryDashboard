@@ -5,8 +5,10 @@ import com.example.territorydashboard.data.csv.LeitorCsv
 import com.example.territorydashboard.data.local.AppDatabase
 import com.example.territorydashboard.data.local.PreferenciasLocal
 import com.example.territorydashboard.data.repositorio.TerritorioRepositorioImpl
+import com.example.territorydashboard.domain.repositorio.Notificador
 import com.example.territorydashboard.domain.repositorio.PreferenciasRepositorio
 import com.example.territorydashboard.domain.repositorio.TerritorioRepositorio
+import com.example.territorydashboard.nativo.NotificadorAndroid
 
 class TerritoryApp : Application() {
 
@@ -18,5 +20,9 @@ class TerritoryApp : Application() {
 
     val preferencias: PreferenciasRepositorio by lazy {
         PreferenciasLocal(this)
+    }
+
+    val notificador: Notificador by lazy {
+        NotificadorAndroid(this)
     }
 }

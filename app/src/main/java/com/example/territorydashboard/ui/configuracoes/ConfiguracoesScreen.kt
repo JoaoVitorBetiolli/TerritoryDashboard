@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.territorydashboard.domain.modelo.Tema
+import com.example.territorydashboard.nativo.CartaoPermissaoNotificacao
 import com.example.territorydashboard.ui.componentes.StateView
 import com.example.territorydashboard.ui.componentes.TerritorySelector
 import com.example.territorydashboard.ui.componentes.TipoEstado
@@ -80,6 +81,13 @@ fun ConfiguracoesScreen(
                     )
                 }
             }
+        }
+        item {
+            Titulo("Notificações")
+            CartaoPermissaoNotificacao(
+                mostrarQuandoConcedida = true,
+                onConcedida = {}
+            )
         }
 
         item {

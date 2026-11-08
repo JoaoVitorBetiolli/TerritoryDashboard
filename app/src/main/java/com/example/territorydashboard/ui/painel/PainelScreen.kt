@@ -13,7 +13,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.territorydashboard.domain.modelo.NivelAlerta
 import com.example.territorydashboard.domain.modelo.OrigemDado
+import com.example.territorydashboard.nativo.CartaoPermissaoNotificacao
 import com.example.territorydashboard.ui.componentes.AlertCard
 import com.example.territorydashboard.ui.componentes.AvisoDados
 import com.example.territorydashboard.ui.componentes.KpiCard
@@ -53,6 +55,7 @@ fun PainelScreen(
                 onSelecionarTerritorio = { id -> viewModel.selecionarTerritorio(id) },
                 onAbrirIndicador = onAbrirIndicador,
                 onAbrirAlerta = onAbrirAlerta,
+                onPermissaoConcedida = { viewModel.notificarCriticos() },
                 modifier = modifier
             )
     }
@@ -64,6 +67,7 @@ private fun ConteudoPainel(
     onSelecionarTerritorio: (String) -> Unit,
     onAbrirIndicador: (String, String) -> Unit,
     onAbrirAlerta: (String, String) -> Unit,
+    onPermissaoConcedida: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val painel = estado.painel
@@ -100,6 +104,15 @@ private fun ConteudoPainel(
 
         if (painel.desatualizado) {
             item { AvisoDados("Dados desatualizados: o app não emite alertas para este território até receber dados novos.") }
+        }
+        // so pede a permissao quando ela faz sentido: quando existe alerta critico
+        if (painel.alertas.any { it.nivel == NivelAlerta.CRITICO }) {
+            item {
+                CartaoPermissaoNotificacao(
+                    mostrarQuandoConcedida = false,
+                    onConcedida = onPermissaoConcedida
+                )
+            }
         }
 
         item {
