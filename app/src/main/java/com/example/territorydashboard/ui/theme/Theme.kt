@@ -1,58 +1,86 @@
 package com.example.territorydashboard.ui.theme
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+private val CoresClaras = lightColorScheme(
+    primary = VerdeAzulado,
+    onPrimary = Color.White,
+    secondary = AzulAgua,
+    onSecondary = Color.White,
+    error = StatusCriticoClaro,
+    background = FundoClaro,
+    surface = Color.White,
+    // sem isso os cards e chips ficam com o lilas padrao do Material
+    secondaryContainer = Color(0xFFCDE8E4),
+    onSecondaryContainer = Color(0xFF00201C),
+    surfaceVariant = Color(0xFFE3ECEA),
+    surfaceContainerHighest = Color(0xFFE3ECEA)
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+private val CoresEscuras = darkColorScheme(
+    primary = VerdeAzuladoEscuro,
+    onPrimary = Color.Black,
+    secondary = AzulAguaEscuro,
+    onSecondary = Color.Black,
+    error = StatusCriticoEscuro,
+    background = FundoEscuro,
+    surface = Color(0xFF1E1E1E),
+    secondaryContainer = Color(0xFF1F4D47),
+    onSecondaryContainer = Color(0xFFCDE8E4),
+    surfaceVariant = Color(0xFF2A3230),
+    surfaceContainerHighest = Color(0xFF2A3230)
+)
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+// cores de status que o Material nao tem: normal, atencao, critico e sem dados
+data class CoresStatus(
+    val normal: Color,
+    val atencao: Color,
+    val critico: Color,
+    val semDados: Color
+)
+
+private val StatusClaro = CoresStatus(StatusNormalClaro, StatusAtencaoClaro, StatusCriticoClaro, SemDadosClaro)
+private val StatusEscuro = CoresStatus(StatusNormalEscuro, StatusAtencaoEscuro, StatusCriticoEscuro, SemDadosEscuro)
+
+@Composable
+fun coresStatus(): CoresStatus {
+    return if (isSystemInDarkTheme()) StatusEscuro else StatusClaro
+}
+
+// espacamentos padrao, para nao ter numero solto nas telas
+object Espaco {
+    val pequeno = 4.dp
+    val medio = 8.dp
+    val grande = 16.dp
+    val extra = 24.dp
+}
+
+private val Formas = Shapes(
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(16.dp)
 )
 
 @Composable
 fun TerritoryDashboardTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    // sem cor dinamica (Android 12+) para o app manter a identidade propria
+    val cores = if (darkTheme) CoresEscuras else CoresClaras
 
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = cores,
         typography = Typography,
+        shapes = Formas,
         content = content
     )
 }
